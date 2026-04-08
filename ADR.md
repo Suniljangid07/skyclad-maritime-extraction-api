@@ -27,6 +27,8 @@ The interface is intentionally small:
 
 That keeps vendor-specific payload shaping in one place while the extraction pipeline stays provider-agnostic.
 
+I also versioned the extraction prompt with `EXTRACTION_PROMPT_VERSION` and persisted that value on each extraction record. That matters because prompt changes are effectively behavior changes. In production, prompt versioning helps with reproducibility, debugging regressions, comparing extraction quality over time, and running controlled A/B tests across prompt variants. Without prompt versioning, it becomes much harder to answer simple operational questions like why two extractions for the same document looked different a month apart.
+
 ## Question 4 - Schema Design
 
 Storing dynamic fields as JSON text is flexible, but at scale it becomes a liability. The main risks are poor queryability, weak constraints, ambiguous field naming, and expensive reporting logic. Once too much business logic depends on JSON blobs, the database stops helping us enforce data quality and starts acting like a passive object store.
@@ -40,3 +42,5 @@ I deliberately skipped authentication and authorization. Real maritime document 
 I also skipped cloud object storage. The current implementation stores uploads durably on the local filesystem, which is enough to satisfy restart safety for a single-node service but not enough for a multi-instance production deployment. I would replace this with S3-compatible storage and signed access paths.
 
 I skipped observability beyond the health endpoint. A production version would need structured logs, metrics, tracing, alerting on queue lag, provider failures, parse-repair rates, and webhook delivery outcomes.
+
+I also did not upgrade Multer from 1.x to 2.x in this submission even though the package now carries a deprecation warning. I kept it because the current code is already integrated, tested, and working for the take-home, but in a production follow-up I would either upgrade to Multer 2.x or replace it with a maintained upload path so the service is not built on a deprecated multipart dependency.

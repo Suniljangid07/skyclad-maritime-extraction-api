@@ -31,6 +31,19 @@ test('POST /api/extract sync returns assignment-shaped extraction result', async
   assert.equal(typeof response.body.medicalData, 'object');
 });
 
+test('POST /api/extract returns assignment error shape for unsupported format', async () => {
+  const { app } = createApp();
+  const response = await request(app)
+    .post('/api/extract')
+    .attach('document', Buffer.from('plain-text-file'), { filename: 'notes.txt', contentType: 'text/plain' });
+
+  assert.equal(response.status, 400);
+  assert.equal(response.body.error, 'UNSUPPORTED_FORMAT');
+  assert.equal(response.body.message, 'File type not accepted');
+  assert.equal(response.body.extractionId, null);
+  assert.equal(response.body.retryAfterMs, null);
+});
+
 test('async job completes after app restart because payload is stored durably', async () => {
   const firstApp = createApp();
   const submit = await request(firstApp.app)

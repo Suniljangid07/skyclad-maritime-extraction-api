@@ -8,6 +8,11 @@ test('ensureJsonObject strips markdown fence and leading text', () => {
   assert.equal(cleaned, '{"ok":true,"nested":{"value":1}}');
 });
 
+test('ensureJsonObject strips trailing text after closing brace', () => {
+  const raw = '{"ok":true}\nSome trailing explanation';
+  assert.equal(ensureJsonObject(raw), '{"ok":true}');
+});
+
 test('ensureJsonObject throws when no object exists', () => {
   assert.throws(() => ensureJsonObject('not json'));
 });
